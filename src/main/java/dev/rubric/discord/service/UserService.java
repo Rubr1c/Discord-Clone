@@ -26,7 +26,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Integer getUserIdByUsername(String username) {
+    public Long getUserIdByUsername(String username) {
         logger.info("Fetching user ID for username: {}", username);
 
         return userRepository.getUserByUsername(username)
@@ -37,7 +37,7 @@ public class UserService {
                 });
     }
 
-    public String getUsernameByUserId(Integer userId) {
+    public String getUsernameByUserId(Long userId) {
         logger.info("Fetching username for user ID: {}", userId);
 
         return userRepository.getUserByUserId(userId)
@@ -59,7 +59,7 @@ public class UserService {
                 });
     }
 
-    public String getDisplayNameByUserId(Integer userId) {
+    public String getDisplayNameByUserId(Long userId) {
         logger.info("Fetching display name for user ID: {}", userId);
 
         return userRepository.getUserByUserId(userId)
@@ -70,14 +70,16 @@ public class UserService {
                 });
     }
 
-    private Integer generateRandomUserId() {
+    private Long generateRandomUserId() {
         logger.debug("Generating random user ID");
-        return (int) (RANDOM.nextLong() % 1_000_000_000_000_000_000L + 1_000_000_000_000_000_000L);
+        long min = 100_000_000_000_000_000L;
+        long max = 999_999_999_999_999_999L;
+        return min + (long) (Math.random() * (max - min + 1));
     }
 
-    public Integer generateUniqueUserId() {
+    public Long generateUniqueUserId() {
         logger.info("Generating unique user ID");
-        Integer newUserId;
+        Long newUserId;
         do {
             newUserId = generateRandomUserId();
         } while (userRepository.getUserByUserId(newUserId).isPresent());
@@ -85,19 +87,24 @@ public class UserService {
         return newUserId;
     }
 
-    private Boolean validatePassword(String password) {
+    public Boolean isValidPassword(String password) {
         logger.debug("Validating password");
         return password.length() >= 8 &&
                 password.chars().anyMatch(Character::isUpperCase) &&
                 password.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
     }
 
-    public boolean isEmailValid(String email) {
+    public boolean isValidEmail(String email) {
         logger.debug("Validating email: {}", email);
         return email != null && !email.isEmpty() && email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
     }
 
-    public Integer createUser(String displayName, String email, String username, String password) {
+    public boolean isValidUsername(String username) {
+        return username.length() <= 25 &&
+                username.chars().noneMatch(Character::isWhitespace);
+    }
+
+    public Long createUser(String displayName, String email, String username, String password) {
         logger.info("Creating user with username: {}", username);
 
         userRepository.getUserByUsername(username).ifPresent(uname -> {
@@ -105,14 +112,19 @@ public class UserService {
             throw new UserExistsException(username);
         });
 
-        if (!validatePassword(password)) {
+        if (!isValidPassword(password)) {
             logger.warn("Password validation failed for username: {}", username);
             throw new InvalidPasswordException("Password does not meet security requirements");
         }
 
-        if (!isEmailValid(email)) {
+        if (!isValidEmail(email)) {
             logger.warn("Email validation failed for email: {}", email);
             throw new InvalidEmailException(email);
+        }
+
+        if (!isValidUsername(username)) {
+            logger.warn("Display Name validation failed for username: {}", username);
+            throw new InvalidDisplayNameException(displayName);
         }
 
         String hashedPassword = passwordEncoder.encode(password);
@@ -123,7 +135,7 @@ public class UserService {
         return user.getUserId();
     }
 
-    public Integer authenticateUser(String username, String password) {
+    public Long authenticateUser(String username, String password) {
         logger.info("Authenticating user with username: {}", username);
 
         return userRepository.getUserByUsername(username)
@@ -146,7 +158,7 @@ public class UserService {
                 });
     }
 
-    public void changePassword(Integer userId, String oldPassword, String newPassword) {
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
         logger.info("Changing password for user ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -160,7 +172,7 @@ public class UserService {
             throw new InvalidPasswordException("Old password does not match");
         }
 
-        if (!validatePassword(newPassword)) {
+        if (!isValidPassword(newPassword)) {
             logger.warn("New password validation failed for user ID: {}", userId);
             throw new InvalidPasswordException("New password does not meet security requirements");
         }
@@ -171,7 +183,7 @@ public class UserService {
         logger.info("Password successfully changed for user ID: {}", userId);
     }
 
-    public void updateUser(Integer userId, String email, String displayName) {
+    public void updateUser(Long userId, String email, String displayName) {
         logger.info("Updating user with ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -180,7 +192,7 @@ public class UserService {
                     return new UserNotFoundException(userId);
                 });
 
-        if (email != null && !isEmailValid(email)) {
+        if (email != null && !isValidEmail(email)) {
             logger.warn("Email validation failed for email: {}", email);
             throw new InvalidEmailException(email);
         }
@@ -192,7 +204,7 @@ public class UserService {
         logger.info("User updated successfully with ID: {}", userId);
     }
 
-    public void deactivateUser(Integer userId) {
+    public void deactivateUser(Long userId) {
         logger.info("Deactivating user with ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -207,12 +219,12 @@ public class UserService {
         logger.info("User deactivated successfully with ID: {}", userId);
     }
 
-    public boolean userExists(Integer userId) {
+    public boolean userExists(Long userId) {
         logger.debug("Checking if user exists with ID: {}", userId);
         return userRepository.getUserByUserId(userId).isPresent();
     }
 
-    public void deleteUser(Integer userId) {
+    public void deleteUser(Long userId) {
         logger.info("Deleting user with ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -225,7 +237,7 @@ public class UserService {
         logger.info("User deleted successfully with ID: {}", userId);
     }
 
-    public User getUserDetails(Integer userId) {
+    public User getUserDetails(Long userId) {
         logger.info("Fetching details for user ID: {}", userId);
 
         return userRepository.getUserByUserId(userId)
@@ -250,7 +262,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void removeFriend(Integer userId, Integer friendId) {
+    public void removeFriend(Long userId, Long friendId) {
         logger.info("Removing friend with ID: {} for user ID: {}", friendId, userId);
 
         User[] users = getUserAndFriend(userId, friendId);
@@ -270,14 +282,14 @@ public class UserService {
         logger.info("Friend with ID: {} removed successfully for user ID: {}", friendId, userId);
     }
 
-    public List<Integer> getMutualFriends(Integer userId, Integer friendId) {
+    public List<Long> getMutualFriends(Long userId, Long friendId) {
         logger.info("Fetching mutual friends between user ID: {} and user ID: {}", userId, friendId);
 
         User[] users = getUserAndFriend(userId, friendId);
         User user = users[0];
         User friend = users[1];
 
-        List<Integer> mutualFriends = user.getFriends().stream()
+        List<Long> mutualFriends = user.getFriends().stream()
                 .filter(friend.getFriends()::contains)
                 .collect(Collectors.toList());
 
@@ -285,7 +297,7 @@ public class UserService {
         return mutualFriends;
     }
 
-    public List<Integer> getFriends(Integer userId) {
+    public List<Long> getFriends(Long userId) {
         logger.info("Fetching friends for user ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -294,23 +306,25 @@ public class UserService {
                     return new UserNotFoundException(userId);
                 });
 
-        List<Integer> friends = List.copyOf(user.getFriends());
+        List<Long> friends = List.copyOf(user.getFriends());
         logger.info("Found {} friends for user ID: {}", friends.size(), userId);
         return friends;
     }
 
-    public User[] getUserAndFriend(Integer userId, Integer friendId) {
+    public User[] getUserAndFriend(Long userId, Long friendId) {
         logger.info("Fetching user ID: {} and friend ID: {}", userId, friendId);
 
-        User[] users = getUserAndFriend(userId, friendId);
-        User user = users[0];
-        User friend = users[1];
+        User user = userRepository.getUserByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        User friend = userRepository.getUserByUserId(friendId)
+                .orElseThrow(() -> new UserNotFoundException(friendId));
 
         logger.info("Fetched user ID: {} and friend ID: {}", userId, friendId);
         return new User[]{user, friend};
     }
 
-    public void sendFriendRequest(Integer userId, Integer friendId) {
+    public void sendFriendRequest(Long userId, Long friendId) {
         logger.info("User ID: {} is sending a friend request to user ID: {}", userId, friendId);
 
         User[] users = getUserAndFriend(userId, friendId);
@@ -331,7 +345,7 @@ public class UserService {
         logger.info("Friend request successfully sent from user ID: {} to user ID: {}", userId, friendId);
     }
 
-    public void acceptFriendRequest(Integer userId, Integer friendId) {
+    public void acceptFriendRequest(Long userId, Long friendId) {
         logger.info("User ID: {} is accepting a friend request from user ID: {}", userId, friendId);
 
         User[] users = getUserAndFriend(userId, friendId);
@@ -355,7 +369,7 @@ public class UserService {
         logger.info("Friend request successfully accepted between user ID: {} and user ID: {}", userId, friendId);
     }
 
-    public void rejectFriendRequest(Integer userId, Integer friendId) {
+    public void rejectFriendRequest(Long userId, Long friendId) {
         logger.info("User ID: {} is rejecting a friend request from user ID: {}", userId, friendId);
 
         User[] users = getUserAndFriend(userId, friendId);

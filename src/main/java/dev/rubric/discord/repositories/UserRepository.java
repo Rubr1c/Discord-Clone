@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.repository.Query;
 import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User, String> {
-    Optional<User> getUserByUserId(Integer userId);
+    Optional<User> getUserByUserId(Long userId);
     Optional<User> getUserByUsername(String username);
-    Boolean existsByUserId(Integer userId);
-    void deleteByUserId(Integer userId);
+    Boolean existsByUserId(Long userId);
+    void deleteByUserId(Long userId);
 }

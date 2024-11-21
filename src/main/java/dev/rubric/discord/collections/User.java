@@ -10,7 +10,7 @@ import java.util.Set;
 @Document(collection = "users")
 public class User {
     @Id
-    private Integer userId;
+    private Long userId;
 
     @Indexed(unique = true)
     private String username;
@@ -19,11 +19,11 @@ public class User {
     private String displayName;
     private String password;
     private Boolean isActive = true;
-    private Set<Integer> friends = new HashSet<>();
-    private Set<Integer> sentFriendRequests = new HashSet<>();
-    private Set<Integer> receivedFriendRequests = new HashSet<>();
+    private Set<Long> friends = new HashSet<>();
+    private Set<Long> sentFriendRequests = new HashSet<>();
+    private Set<Long> receivedFriendRequests = new HashSet<>();
 
-    public User(Integer userId,
+    public User(Long userId,
                 String email,
                 String username,
                 String displayName,
@@ -38,11 +38,11 @@ public class User {
 
     public User() {}
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -86,43 +86,43 @@ public class User {
         isActive = active;
     }
 
-    public Set<Integer> getFriends() {
+    public Set<Long> getFriends() {
         return friends;
     }
 
-    public void setFriends(HashSet<Integer> friends) {
+    public void setFriends(HashSet<Long> friends) {
         this.friends = friends;
     }
 
-    public boolean addFriend(Integer friendId) {
+    public boolean addFriend(Long friendId) {
         return friends.add(friendId);
     }
 
-    public boolean removeFriend(Integer friendId) {
+    public boolean removeFriend(Long friendId) {
         return friends.remove(friendId);
     }
 
-    public Set<Integer> getSentFriendRequests() {
+    public Set<Long> getSentFriendRequests() {
         return sentFriendRequests;
     }
 
-    public boolean addSentFriendRequest(Integer friendId) {
+    public boolean addSentFriendRequest(Long friendId) {
         return sentFriendRequests.add(friendId);
     }
 
-    public boolean removeSentFriendRequest(Integer friendId) {
+    public boolean removeSentFriendRequest(Long friendId) {
         return sentFriendRequests.remove(friendId);
     }
 
-    public Set<Integer> getReceivedFriendRequests() {
+    public Set<Long> getReceivedFriendRequests() {
         return receivedFriendRequests;
     }
 
-    public boolean addReceivedFriendRequest(Integer friendId) {
+    public boolean addReceivedFriendRequest(Long friendId) {
         return receivedFriendRequests.add(friendId);
     }
 
-    public boolean removeReceivedFriendRequest(Integer friendId) {
+    public boolean removeReceivedFriendRequest(Long friendId) {
         return receivedFriendRequests.remove(friendId);
     }
 }
