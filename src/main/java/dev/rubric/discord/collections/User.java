@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,25 +19,13 @@ public class User {
     private String email;
     private String displayName;
     private String password;
+    private String avatarUrl;
     private Boolean isActive = true;
+    private Instant createdAt;
     private Set<Long> friends = new HashSet<>();
     private Set<Long> sentFriendRequests = new HashSet<>();
     private Set<Long> receivedFriendRequests = new HashSet<>();
-
-    public User(Long userId,
-                String email,
-                String username,
-                String displayName,
-                String password) {
-
-        this.email = email;
-        this.userId = userId;
-        this.username = username;
-        this.displayName = displayName;
-        this.password = password;
-    }
-
-    public User() {}
+    private Set<Long> notificationIds = new HashSet<>();
 
     public Long getUserId() {
         return userId;
@@ -106,6 +95,10 @@ public class User {
         return sentFriendRequests;
     }
 
+    public void setSentFriendRequests(HashSet<Long> sentFriendRequests) {
+        this.sentFriendRequests = sentFriendRequests;
+    }
+
     public boolean addSentFriendRequest(Long friendId) {
         return sentFriendRequests.add(friendId);
     }
@@ -118,11 +111,47 @@ public class User {
         return receivedFriendRequests;
     }
 
+    public void setReceivedFriendRequests(HashSet<Long> receivedFriendRequests) {
+        this.receivedFriendRequests = receivedFriendRequests;
+    }
+
     public boolean addReceivedFriendRequest(Long friendId) {
         return receivedFriendRequests.add(friendId);
     }
 
     public boolean removeReceivedFriendRequest(Long friendId) {
         return receivedFriendRequests.remove(friendId);
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Set<Long> getNotificationIds() {
+        return notificationIds;
+    }
+
+    public void setNotificationIds(Set<Long> notificationIds) {
+        this.notificationIds = notificationIds;
+    }
+
+    public boolean addNotificationId(Long notificationId) {
+        return notificationIds.add(notificationId);
+    }
+
+    public boolean removeNotificationId(Long notificationId) {
+        return notificationIds.remove(notificationId);
     }
 }

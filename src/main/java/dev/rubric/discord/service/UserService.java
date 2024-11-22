@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,7 @@ public class UserService {
         return min + (long) (Math.random() * (max - min + 1));
     }
 
-    public Long generateUniqueUserId() {
+    private Long generateUniqueUserId() {
         logger.info("Generating unique user ID");
         Long newUserId;
         do {
@@ -87,19 +88,19 @@ public class UserService {
         return newUserId;
     }
 
-    public Boolean isValidPassword(String password) {
+    private Boolean isValidPassword(String password) {
         logger.debug("Validating password");
         return password.length() >= 8 &&
                 password.chars().anyMatch(Character::isUpperCase) &&
                 password.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
     }
 
-    public boolean isValidEmail(String email) {
+    private boolean isValidEmail(String email) {
         logger.debug("Validating email: {}", email);
         return email != null && !email.isEmpty() && email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
     }
 
-    public boolean isValidUsername(String username) {
+    private boolean isValidUsername(String username) {
         return username.length() <= 25 &&
                 username.chars().noneMatch(Character::isWhitespace);
     }
@@ -128,7 +129,14 @@ public class UserService {
         }
 
         String hashedPassword = passwordEncoder.encode(password);
-        User user = new User(generateUniqueUserId(), email, username, displayName, hashedPassword);
+        User user = new User();
+        user.setUserId(generateUniqueUserId());
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setDisplayName(displayName);
+        user.setPassword(hashedPassword);
+        user.setAvatarUrl(null);
+        user.setCreatedAt(Instant.now());
         userRepository.save(user);
 
         logger.info("User created successfully with ID: {}", user.getUserId());
@@ -183,7 +191,10 @@ public class UserService {
         logger.info("Password successfully changed for user ID: {}", userId);
     }
 
-    public void updateUser(Long userId, String email, String displayName) {
+    public void updateUser(Long userId,
+                           String email,
+                           String username,
+                           String displayName) {
         logger.info("Updating user with ID: {}", userId);
 
         User user = userRepository.getUserByUserId(userId)
@@ -197,6 +208,12 @@ public class UserService {
             throw new InvalidEmailException(email);
         }
 
+        if (username != null && !isValidUsername(username)) {
+            logger.warn("Username validation failed for username: {}", username);
+            throw new InvalidUsernameException(username);
+        }
+
+        if (username != null) user.setUsername(username);
         if (email != null) user.setEmail(email);
         if (displayName != null) user.setDisplayName(displayName);
 

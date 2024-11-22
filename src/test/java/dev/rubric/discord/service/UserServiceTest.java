@@ -150,62 +150,6 @@ class UserServiceTest {
         verify(userRepository, times(1)).getUserByUserId(anyLong());
     }
 
-    @Test
-    void testIsValidPassword_Success() {
-        String password = "Az2200418!";
-
-        assertTrue(userService.isValidPassword(password));
-    }
-
-    @Test
-    void testIsValidPassword_Short() {
-        String password = "Az2!";
-
-        assertFalse(userService.isValidPassword(password));
-    }
-
-    @Test
-    void testIsValidPassword_Lower() {
-        String password = "az2200418!";
-
-        assertFalse(userService.isValidPassword(password));
-    }
-
-    @Test
-    void testIsValidPassword_Char() {
-        String password = "Az2200418";
-
-        assertFalse(userService.isValidPassword(password));
-    }
-
-    @Test
-    void testIsValidEmail_Success() {
-        String email = "alizahloul64@gmail.com";
-
-        assertTrue(userService.isValidEmail(email));
-    }
-
-    @Test
-    void testIsValidEmail_Null() {
-        assertFalse(userService.isValidEmail(null));
-    }
-
-    @Test
-    void testIsValidEmail_Empty() {
-        String email = "";
-
-        assertFalse(userService.isValidEmail(email));
-    }
-
-    @Test
-    void testIsValidEmail_IncorrectRegex() {
-        String[] emails = {"123432.com", "23412", "huaduyahd", "com.cold@test"};
-
-        for (String email : emails) {
-            assertFalse(userService.isValidEmail(email));
-        }
-    }
-
 
 }
 

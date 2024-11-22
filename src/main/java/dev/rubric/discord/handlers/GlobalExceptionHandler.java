@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     private HttpStatus getStatus(String errorCode) {
         return switch (errorCode) {
             case "USER_NOT_FOUND" -> HttpStatus.NOT_FOUND;
-            case "INVALID_EMAIL", "INVALID_PASSWORD", "INVALID_DISPLAY_NAME" -> HttpStatus.BAD_REQUEST;
+            case "INVALID_EMAIL", "INVALID_PASSWORD", "INVALID_NAME" -> HttpStatus.BAD_REQUEST;
             case "USER_ALREADY_EXISTS", "FRIEND_ALREADY_EXISTS" -> HttpStatus.CONFLICT;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
